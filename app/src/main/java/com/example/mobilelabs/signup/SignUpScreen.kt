@@ -35,6 +35,10 @@ import com.example.mobilelabs.R
 @Preview
 @Composable
 fun SignUpScreen(
+    name: String,
+    password: String,
+    onNameChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
     onRegister: () -> Unit = {},
     onSignIn: () -> Unit = {},
     onBack: () -> Unit = {}
@@ -45,9 +49,7 @@ fun SignUpScreen(
     val passwordRequester = remember { FocusRequester() }
     val confirmRequester = remember { FocusRequester() }
 
-    var name by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
     var confirm by rememberSaveable { mutableStateOf("") }
     var gender by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -117,7 +119,7 @@ fun SignUpScreen(
                 TextField(
                     value = name,
                     error = nameError,
-                    onValueChange = { name = it; if (nameError != null) nameError = null },
+                    onValueChange = { onNameChange(it); if (nameError != null) nameError = null},
                     label = "Имя",
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next,
@@ -143,7 +145,7 @@ fun SignUpScreen(
                     value = password,
                     show = showPassword,
                     error = passwordError,
-                    onValueChange = { password = it; if (passwordError != null) passwordError = null },
+                    onValueChange = { onPasswordChange(it); if (passwordError != null) passwordError = null} ,
                     onToggleShow = { showPassword = !showPassword },
                     modifier = Modifier
                         .focusRequester(passwordRequester)

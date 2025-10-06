@@ -5,12 +5,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.example.mobilelabs.LogActivity
 import com.example.mobilelabs.onboard.OnBoardScreen
 import com.example.mobilelabs.signin.SignInActivity
 import com.example.mobilelabs.signup.SignUpActivity
 import com.example.mobilelabs.ui.theme.MobileLabsTheme
 
-class HomeActivity : ComponentActivity(){
+class HomeActivity : LogActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

@@ -36,6 +36,10 @@ import com.example.mobilelabs.signin.ActionButton
 @Preview
 @Composable
 fun SignInScreen(
+    name: String,
+    password: String,
+    onNameChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
     onSignIn: ()->Unit = {},
     onSignUp: ()->Unit = {},
     onBack: ()->Unit = {}
@@ -43,9 +47,6 @@ fun SignInScreen(
     val focusManager = LocalFocusManager.current
     val nameRequester = remember { FocusRequester() }
     val passwordRequester = remember { FocusRequester() }
-
-    var name by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
 
     var nameError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
@@ -95,7 +96,7 @@ fun SignInScreen(
                 NameField(
                     name = name,
                     error = nameError,
-                    onValueChange = { name = it; if (nameError != null) nameError = null },
+                    onValueChange = { onNameChange(it); if (nameError != null) nameError = null },
                     onNext = { passwordRequester.requestFocus() },
                     modifier = Modifier
                         .focusRequester(nameRequester)
@@ -106,7 +107,7 @@ fun SignInScreen(
                     show = showPassword,
                     error = passwordError,
                     onValueChange = {
-                        password = it; if (passwordError != null) passwordError = null
+                        onPasswordChange(it); if (passwordError != null) passwordError = null
                     },
                     onToggleShow = { showPassword = !showPassword },
                     modifier = Modifier
