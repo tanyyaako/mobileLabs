@@ -49,6 +49,16 @@ android {
 
 dependencies {
     val nav_version = "2.9.5"
+    val ktor_version = "2.3.4"
+
+    implementation("io.ktor:ktor-client-core:${ktor_version}")
+    implementation("io.ktor:ktor-client-okhttp:${ktor_version}")
+    implementation("io.ktor:ktor-client-android:${ktor_version}")
+    implementation("io.ktor:ktor-client-logging:${ktor_version}")
+    implementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:${ktor_version}")
+
+    implementation ("io.coil-kt:coil-compose:2.4.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
