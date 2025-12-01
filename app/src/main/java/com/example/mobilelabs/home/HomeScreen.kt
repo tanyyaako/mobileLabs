@@ -25,32 +25,60 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import android.util.Log
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.sp
 import com.example.mobilelabs.R
 import com.example.mobilelabs.Model.Disney.DisneyCharacter
 import com.example.mobilelabs.network.KtorDisneyCharacterApi
+import com.example.mobilelabs.store.DisneyCacheManager
+import com.example.mobilelabs.store.datastore.SettingsDataStore
 
 @Preview
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onSettingsClick: () -> Unit,
+    onNavigateToSettingsWithData: (List<DisneyCharacter>) -> Unit
+) {
     val charactersState = remember { mutableStateListOf<DisneyCharacter>() }
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+
+
+    val context = LocalContext.current
+    val dataStore = remember { SettingsDataStore(context) }
+    val fontSize by dataStore.currentFontSize.collectAsState(initial = 16f)
 
     suspend fun loadData() {
         isLoading = true
         error = null
 
+        if (DisneyCacheManager.hasCache() && DisneyCacheManager.isCacheValid()) {
+            Log.d("HomeScreen", "Используем данные из кэша")
+            charactersState.clear()
+            charactersState.addAll(DisneyCacheManager.getCharacters())
+            isLoading = false
+            return
+        }
+
 
         val characters = KtorDisneyCharacterApi.getCharacters(1..50).getOrElse { exception ->
             error = exception.message
             Log.e("HomeScreen", "Ошибка загрузки: ${exception.message}")
-            emptyList()
+            if (DisneyCacheManager.hasCache()) {
+                Log.d("HomeScreen", "Используем старый кэш из-за ошибки сети")
+                DisneyCacheManager.getCharacters()
+            } else {
+                emptyList()
+            }
         }
 
         if (error == null) {
             charactersState.clear()
             charactersState.addAll(characters)
+            DisneyCacheManager.saveCache(characters)
             Log.d("HomeScreen", "Успешно загружено ${characters.size} персонажей")
         }
 
@@ -72,7 +100,8 @@ fun HomeScreen() {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            TopBar()
+            TopBar(onSettingsClick = onSettingsClick,
+                fontSize = fontSize)
             Spacer(modifier = Modifier.height(16.dp))
 
             when {
@@ -90,7 +119,8 @@ fun HomeScreen() {
                             CircularProgressIndicator()
                             Text(
                                 text = "Загрузка Disney персонажей...",
-                                color = androidx.compose.ui.graphics.Color.White
+                                color = androidx.compose.ui.graphics.Color.White,
+                                fontSize = fontSize.sp
                             )
                         }
                     }
@@ -105,7 +135,8 @@ fun HomeScreen() {
                     ) {
                         Text(
                             text = "Ошибка: $error",
-                            color = androidx.compose.ui.graphics.Color.White
+                            color = androidx.compose.ui.graphics.Color.White,
+                            fontSize = fontSize.sp
                         )
                     }
                 }
@@ -120,7 +151,8 @@ fun HomeScreen() {
                         items(charactersState) { character ->
                             DisneyCharacterCard(
                                 character = character,
-                                modifier = Modifier
+                                modifier = Modifier,
+                                fontSize = fontSize
                             )
                         }
                     }

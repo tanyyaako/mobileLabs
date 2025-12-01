@@ -3,8 +3,10 @@ package com.example.mobilelabs.home
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -18,13 +20,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun TopBar(){
-    Box (modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)){
+fun TopBar(onSettingsClick: () -> Unit,
+           fontSize: Float ) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp)
+    ) {
+        IconButton(
+            onClick = onSettingsClick,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Настройки",
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+
         Text(
             text = "Дисней",
             modifier = Modifier.align(Alignment.Center),
             textAlign = TextAlign.Center,
-            fontSize = 32.sp,
+            fontSize = (fontSize + 6).sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )

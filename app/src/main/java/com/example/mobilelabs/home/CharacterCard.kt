@@ -25,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.mobilelabs.Model.Disney.DisneyCharacter
 
@@ -32,6 +33,7 @@ import com.example.mobilelabs.Model.Disney.DisneyCharacter
 fun DisneyCharacterCard(
     character: DisneyCharacter,
     modifier: Modifier = Modifier,
+    fontSize: Float,
 ) {
     Card(
         modifier = modifier
@@ -91,23 +93,28 @@ fun DisneyCharacterCard(
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
+                    fontSize = fontSize.sp,
                     overflow = TextOverflow.Ellipsis
                 )
                 CharacterInfoRow(
                     label = "Фильмы",
-                    items = character.films
+                    items = character.films,
+                    fontSize = fontSize
                 )
                 CharacterInfoRow(
                     label = "Короткометражки",
-                    items = character.shortFilms
+                    items = character.shortFilms,
+                    fontSize = fontSize
                 )
                 CharacterInfoRow(
                     label = "TV шоу",
-                    items = character.tvShows
+                    items = character.tvShows,
+                    fontSize = fontSize
                 )
                 CharacterInfoRow(
                     label = "Видеоигры",
-                    items = character.videoGames
+                    items = character.videoGames,
+                    fontSize = fontSize
                 )
 //                Text(
 //                    text = "ID: ${character.id}",
@@ -122,10 +129,12 @@ fun DisneyCharacterCard(
 @Composable
 private fun CharacterInfoRow(
     label: String,
-    items: List<String>
+    items: List<String>,
+    fontSize: Float
 ) {
     Text(
         text = "$label: ${getFormattedList(items)}",
+        fontSize = (fontSize * 0.9).sp,
         style = MaterialTheme.typography.bodySmall,
         maxLines = 2,
         overflow = TextOverflow.Ellipsis

@@ -13,12 +13,19 @@ import androidx.compose.runtime.remember
 import com.example.mobilelabs.MainActivity
 import com.example.mobilelabs.Model.User
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.mobilelabs.R
 import com.example.mobilelabs.home.HomeFragment
 import com.example.mobilelabs.signup.SignUpFragment
+import com.example.mobilelabs.store.datastore.SettingsDataStore
+import com.example.mobilelabs.store.sharedPref.SettingsSharedPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SignInFragment : Fragment() {
 
@@ -31,6 +38,9 @@ class SignInFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                val context = LocalContext.current
+                val sharedPrefs = remember { SettingsSharedPreferences(context) }
+                val coroutineScope = rememberCoroutineScope()
                 val user = args.user
                 var name by remember { mutableStateOf(user?.name ?: "") }
                 var password by remember { mutableStateOf(user?.password ?: "") }
@@ -42,9 +52,14 @@ class SignInFragment : Fragment() {
                         onNameChange = { name = it },
                         onPasswordChange = { password = it },
                         onSignIn = {
-                            findNavController().navigate(
-                                SignInFragmentDirections.actionSignInToHome(name)
-                            )
+                            coroutineScope.launch {
+                                sharedPrefs.setPassword(password)
+                                withContext(Dispatchers.Main) {
+                                    findNavController().navigate(
+                                        SignInFragmentDirections.actionSignInToHome(name)
+                                    )
+                                }
+                            }
                         },
                         onSignUp = {
                             findNavController().navigate(

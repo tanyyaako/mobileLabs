@@ -44,6 +44,11 @@
             android:name="name"
             app:argType="string"
             app:nullable="true"/>
+
+        <action
+            android:id="@+id/action_home_to_settings"
+            app:destination="@id/settingsFragment"
+            app:popUpTo="@id/onboard"/>
     </fragment>
 
     <fragment
@@ -56,4 +61,9 @@
             app:destination="@id/sign_in"
             app:popUpTo="@id/onboard" />
     </fragment>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.mobilelabs.settings.SettingsFragment"
+        android:label="Settings" />
 </navigation>

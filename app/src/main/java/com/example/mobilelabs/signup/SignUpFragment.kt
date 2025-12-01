@@ -14,9 +14,16 @@ import com.example.mobilelabs.Model.User
 import com.example.mobilelabs.ui.theme.MobileLabsTheme
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.os.bundleOf
+import androidx.datastore.dataStore
 import androidx.navigation.findNavController
 import com.example.mobilelabs.signin.SignInFragment
+import com.example.mobilelabs.store.datastore.SettingsDataStore
+import com.example.mobilelabs.store.sharedPref.SettingsSharedPreferences
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 
 class SignUpFragment : Fragment() {
@@ -28,6 +35,9 @@ class SignUpFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                val context = LocalContext.current
+                val sharedPrefs = remember { SettingsSharedPreferences(context) }
+                val coroutineScope = rememberCoroutineScope()
                 var name by remember { mutableStateOf("") }
                 var password by remember { mutableStateOf("") }
 
@@ -43,6 +53,9 @@ class SignUpFragment : Fragment() {
                             findNavController().navigate(action)
                         },
                         onRegister = {
+                            coroutineScope.launch {
+                                sharedPrefs.setPassword(password)
+                            }
                             val user = User(name = name, email = "", password = password)
                             val action = SignUpFragmentDirections.actionSignUpToSignIn(user)
                             findNavController().navigate(action)
