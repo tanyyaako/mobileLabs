@@ -109,11 +109,11 @@ fun DisneyCharacterCard(
                     label = "Видеоигры",
                     items = character.videoGames
                 )
-                Text(
-                    text = "ID: ${character.id}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
+//                Text(
+//                    text = "ID: ${character.id}",
+//                    style = MaterialTheme.typography.bodySmall,
+//                    color = Color.Gray
+//                )
             }
         }
     }

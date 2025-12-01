@@ -15,12 +15,10 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-class KtorDisneyCharacterApi {
+object KtorDisneyCharacterApi {
 
-    private companion object {
-        const val TAG = "DisneyService"
-        const val BASE_URL = "https://api.disneyapi.dev/character"
-    }
+    const val TAG = "DisneyService"
+    const val BASE_URL = "https://api.disneyapi.dev/character"
 
     private val client = HttpClient {
         install(ContentNegotiation) {

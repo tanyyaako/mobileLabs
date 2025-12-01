@@ -41,9 +41,8 @@ fun HomeScreen() {
         isLoading = true
         error = null
 
-        val service = KtorDisneyCharacterApi()
 
-        val characters = service.getCharacters(1..50).getOrElse { exception ->
+        val characters = KtorDisneyCharacterApi.getCharacters(1..50).getOrElse { exception ->
             error = exception.message
             Log.e("HomeScreen", "Ошибка загрузки: ${exception.message}")
             emptyList()
