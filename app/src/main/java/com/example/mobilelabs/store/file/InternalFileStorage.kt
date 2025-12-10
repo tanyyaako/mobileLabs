@@ -33,7 +33,6 @@ class InternalFileStorage(private val context: Context) {
             file.writeText(jsonString)
 
             Log.d("InternalFileStorage", "Резервная копия сохранена в JSON: ${file.absolutePath}")
-            Log.d("InternalFileStorage", "Размер JSON: ${jsonString.length} символов, персонажей: ${characters.size}")
             true
         } catch (e: Exception) {
             Log.e("InternalFileStorage", "Ошибка сохранения резервной копии JSON", e)

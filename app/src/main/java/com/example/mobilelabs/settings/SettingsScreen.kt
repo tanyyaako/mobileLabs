@@ -109,8 +109,9 @@ fun SettingsScreen(
     var isLoading by remember { mutableStateOf(false) }
     var isDeleting by remember { mutableStateOf(false) }
     var isRestoring by remember { mutableStateOf(false) }
-    var showSuccessMessage by remember { mutableStateOf(false) }
-    var successMessage by remember { mutableStateOf("") }
+
+    var showToast by remember { mutableStateOf(false) }
+    var toastMessage by remember { mutableStateOf("") }
 
     val storedFontSize by dataStore.currentFontSize.collectAsState(initial = 16f)
     val storedPassword = sharedPrefs.password
@@ -138,10 +139,10 @@ fun SettingsScreen(
         hasBackup = internalStorage.backupExists(fileName)
     }
 
-    LaunchedEffect(showSuccessMessage) {
-        if (showSuccessMessage) {
+    LaunchedEffect(showToast) {
+        if (showToast) {
             delay(3000)
-            showSuccessMessage = false
+            showToast = false
         }
     }
 
@@ -186,82 +187,69 @@ fun SettingsScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White.copy(alpha = 0.9f)
+                        containerColor = Color.White.copy(alpha = 0.95f)
                     ),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
-                            text = "Управление резервными копиями",
-                            fontSize = (fontSize + 4).sp,
+                            text = "Управление файлами",
+                            fontSize = (fontSize + 2).sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-
-                        Divider(color = Color.Gray.copy(alpha = 0.3f), thickness = 1.dp)
-
-                        Text(
-                            text = "Настройка имени файла:",
-                            fontSize = fontSize.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Black
+                            color = Color(0xFFD43D51)
                         )
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            if (isEditingFileName) {
-                                OutlinedTextField(
-                                    value = tempFileName,
-                                    onValueChange = { tempFileName = it },
-                                    label = { Text("Имя файла (без .txt)") },
-                                    modifier = Modifier.weight(1f),
-                                    singleLine = true,
-                                    colors = TextFieldDefaults.colors(
-                                        focusedContainerColor = Color.Transparent,
-                                        unfocusedContainerColor = Color.Transparent,
-                                        focusedLabelColor = Color(0xFFD43D51),
-                                        unfocusedLabelColor = Color.Gray,
-                                        focusedTextColor = Color.Black,
-                                        unfocusedTextColor = Color.Black
-                                    )
-                                )
+                            Text(
+                                text = "Имя файла:",
+                                fontSize = fontSize.sp,
+                                color = Color.Black,
+                                fontWeight = FontWeight.Medium
+                            )
 
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                            if (isEditingFileName) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
+                                    OutlinedTextField(
+                                        value = tempFileName,
+                                        onValueChange = { tempFileName = it },
+                                        label = { Text("Имя файла") },
+                                        modifier = Modifier.width(180.dp),
+                                        singleLine = true,
+                                        colors = TextFieldDefaults.colors(
+                                            focusedContainerColor = Color.Transparent,
+                                            unfocusedContainerColor = Color.Transparent,
+                                            focusedLabelColor = Color(0xFFD43D51),
+                                            unfocusedLabelColor = Color.Gray,
+                                            focusedTextColor = Color.Black,
+                                            unfocusedTextColor = Color.Black
+                                        )
+                                    )
+
                                     IconButton(
                                         onClick = {
-                                            if (tempFileName.isNotBlank() && tempFileName != fileName) {
+                                            if (tempFileName.isNotBlank()) {
                                                 fileName = tempFileName
                                                 isEditingFileName = false
-                                                Toast.makeText(
-                                                    context,
-                                                    "Имя файла изменено на: $fileName.txt",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            } else if (tempFileName.isBlank()) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Имя файла не может быть пустым",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            } else {
-                                                isEditingFileName = false
+                                                showToast = true
+                                                toastMessage = "Имя файла изменено на: $fileName.txt"
                                             }
-                                        },
-                                        modifier = Modifier.size(48.dp)
+                                        }
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Check,
@@ -274,77 +262,43 @@ fun SettingsScreen(
                                         onClick = {
                                             tempFileName = fileName
                                             isEditingFileName = false
-                                        },
-                                        modifier = Modifier.size(48.dp)
+                                        }
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Close,
                                             contentDescription = "Отмена",
-                                            tint = MaterialTheme.colorScheme.error
+                                            tint = Color.Red
                                         )
                                     }
                                 }
                             } else {
-                                Column(
-                                    modifier = Modifier.weight(1f)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Text(
-                                            text = "Текущий файл:",
-                                            fontSize = fontSize.sp,
-                                            color = Color.Black,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                        IconButton(
-                                            onClick = {
-                                                tempFileName = fileName
-                                                isEditingFileName = true
-                                            },
-                                            modifier = Modifier.size(24.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Edit,
-                                                contentDescription = "Изменить имя файла",
-                                                tint = Color(0xFFD43D51),
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    }
                                     Text(
                                         text = "$fileName.txt",
-                                        fontSize = (fontSize).sp,
+                                        fontSize = fontSize.sp,
                                         color = Color(0xFFD43D51),
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(start = 4.dp)
+                                        fontWeight = FontWeight.SemiBold
                                     )
+
+                                    IconButton(
+                                        onClick = {
+                                            tempFileName = fileName
+                                            isEditingFileName = true
+                                        },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Изменить",
+                                            tint = Color(0xFFD43D51),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
                             }
-                        }
-
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFFE8F5E9).copy(alpha = 0.7f))
-                                .padding(12.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        ) {
-//                            Column {
-//                                Text(
-//                                    text = "Данные для бэкапа:",
-//                                    fontSize = (fontSize - 1).sp,
-//                                    fontWeight = FontWeight.Medium,
-//                                    color = Color.Black
-//                                )
-//                                Text(
-//                                    text = "Персонажей доступно: ${charactersForBackup.size}",
-//                                    fontSize = (fontSize - 2).sp,
-//                                    color = Color.DarkGray
-//                                )
-//                            }
                         }
 
                         AnimatedVisibility(
@@ -352,49 +306,31 @@ fun SettingsScreen(
                             enter = fadeIn(),
                             exit = fadeOut()
                         ) {
-                            OutlinedCard(
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.outlinedCardColors(
-                                    containerColor = Color.White
-                                ),
-                                border = BorderStroke(1.dp, Color(0xFFD43D51).copy(alpha = 0.3f))
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFFFCE4EC).copy(alpha = 0.5f))
+                                    .padding(12.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
-                                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
+                                Text(
+                                    text = "Файл найден:",
+                                    fontSize = (fontSize - 1).sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.Black
+                                )
+                                fileInfo?.let { info ->
                                     Text(
-                                        text = "Информация о файле:",
-                                        fontSize = fontSize.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = Color.Black
+                                        text = "Создан: ${info.formattedDate}",
+                                        fontSize = (fontSize - 2).sp,
+                                        color = Color.DarkGray
                                     )
-                                    fileInfo?.let { info ->
-                                        Text(
-                                            text = "Название: ${info.name}",
-                                            fontSize = (fontSize - 2).sp,
-                                            color = Color.DarkGray
-                                        )
-                                        Text(
-                                            text = "Размер: ${info.formattedSize}",
-                                            fontSize = (fontSize - 2).sp,
-                                            color = Color.DarkGray
-                                        )
-                                        Text(
-                                            text = "Создан: ${info.formattedDate}",
-                                            fontSize = (fontSize - 2).sp,
-                                            color = Color.DarkGray
-                                        )
-                                        Text(
-                                            text = "Расположение: ${info.path}",
-                                            fontSize = (fontSize - 2).sp,
-                                            color = Color.DarkGray,
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
+                                    Text(
+                                        text = "Размер: ${info.formattedSize}",
+                                        fontSize = (fontSize - 2).sp,
+                                        color = Color.DarkGray
+                                    )
                                 }
                             }
                         }
@@ -407,43 +343,16 @@ fun SettingsScreen(
                             Text(
                                 text = "Файл $fileName.txt не найден",
                                 fontSize = fontSize.sp,
-                                color = Color.Red,
-                                fontWeight = FontWeight.Medium
+                                color = Color.Red.copy(alpha = 0.8f),
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.padding(vertical = 8.dp)
                             )
                         }
 
-                        AnimatedVisibility(
-                            visible = hasBackup,
-                            enter = fadeIn(),
-                            exit = fadeOut()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFFE3F2FD))
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Backup,
-                                    contentDescription = null,
-                                    tint = Color(0xFF2196F3),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Text(
-                                    text = "Доступна резервная копия для $fileName.txt",
-                                    fontSize = fontSize.sp,
-                                    color = Color(0xFF2196F3),
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
 
-
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Button(
                                 onClick = {
@@ -453,32 +362,20 @@ fun SettingsScreen(
                                         val success = if (charactersForBackup.isNotEmpty()) {
                                             externalStorage.saveDisneyCharacters(charactersForBackup, fileName)
                                         } else {
-                                            Toast.makeText(
-                                                context,
-                                                "Нет данных для сохранения! Загрузите персонажей на главном экране.",
-                                                Toast.LENGTH_LONG
-                                            ).show()
+                                            showToast = true
+                                            toastMessage = "Нет данных для сохранения!"
                                             false
                                         }
 
                                         if (success) {
                                             fileInfo = externalStorage.getFileInfo(fileName)
-                                            successMessage = "Файл $fileName.txt создан!\nСохранено ${charactersForBackup.size} персонажей"
-                                            showSuccessMessage = true
-
-                                            Toast.makeText(
-                                                context,
-                                                "Файл $fileName.txt создан!\nСохранено ${charactersForBackup.size} персонажей",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        } else {
-                                            successMessage = "Ошибка при создании файла"
-                                            showSuccessMessage = true
+                                            showToast = true
+                                            toastMessage = "Файл создан: ${charactersForBackup.size} персонажей"
                                         }
                                         isLoading = false
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.weight(1f),
                                 enabled = !isLoading && !isDeleting && !isRestoring &&
                                         charactersForBackup.isNotEmpty() && !isEditingFileName,
                                 colors = ButtonDefaults.buttonColors(
@@ -492,17 +389,15 @@ fun SettingsScreen(
                                         color = Color.White,
                                         strokeWidth = 2.dp
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Создание...")
                                 } else {
                                     Icon(
                                         imageVector = Icons.Default.Save,
                                         contentDescription = null,
                                         modifier = Modifier.size(18.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Создать файл $fileName.txt")
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Создать")
                             }
 
                             Button(
@@ -510,36 +405,48 @@ fun SettingsScreen(
                                     coroutineScope.launch {
                                         isDeleting = true
 
-                                        if (charactersForBackup.isNotEmpty()) {
+                                        val charactersFromFile = externalStorage.readDisneyCharacters(fileName)
+                                        var backupCreated = false
+                                        var backupCount = 0
+
+                                        if (charactersFromFile != null && charactersFromFile.isNotEmpty()) {
+                                            val backupSuccess = internalStorage.saveBackup(charactersFromFile, fileName)
+                                            if (backupSuccess) {
+                                                hasBackup = true
+                                                backupCreated = true
+                                                backupCount = charactersFromFile.size
+                                            }
+                                        } else if (charactersForBackup.isNotEmpty()) {
                                             val backupSuccess = internalStorage.saveBackup(charactersForBackup, fileName)
                                             if (backupSuccess) {
                                                 hasBackup = true
+                                                backupCreated = true
+                                                backupCount = charactersForBackup.size
                                             }
                                         }
 
                                         val deleteSuccess = externalStorage.deleteFile(fileName)
+
                                         if (deleteSuccess) {
                                             fileInfo = null
-                                            successMessage = " Файл $fileName.txt удален\n(резервная копия создана: ${charactersForBackup.size} персонажей)"
-                                            showSuccessMessage = true
-
-                                            Toast.makeText(
-                                                context,
-                                                " Файл удален\n Создана резервная копия",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                            showToast = true
+                                            toastMessage = if (backupCreated) {
+                                                "Файл удален (резервная копия: $backupCount персонажей)"
+                                            } else {
+                                                "Файл удален (резервная копия не создана)"
+                                            }
                                         } else {
-                                            successMessage = " Ошибка при удалении файла"
-                                            showSuccessMessage = true
+                                            showToast = true
+                                            toastMessage = "Ошибка при удалении файла"
                                         }
                                         isDeleting = false
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.weight(1f),
                                 enabled = !isLoading && !isDeleting && !isRestoring &&
                                         fileInfo != null && !isEditingFileName,
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.error,
+                                    containerColor = Color(0xFFF44336),
                                     contentColor = Color.White
                                 )
                             ) {
@@ -549,24 +456,54 @@ fun SettingsScreen(
                                         color = Color.White,
                                         strokeWidth = 2.dp
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Удаление...")
                                 } else {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
                                         contentDescription = null,
                                         modifier = Modifier.size(18.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Удалить файл $fileName.txt ")
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Удалить")
                             }
+                        }
 
-                            AnimatedVisibility(
-                                visible = hasBackup,
-                                enter = fadeIn(),
-                                exit = fadeOut()
+                        AnimatedVisibility(
+                            visible = hasBackup,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFFE8F5E9).copy(alpha = 0.7f))
+                                    .padding(12.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Backup,
+                                        contentDescription = null,
+                                        tint = Color(0xFF4CAF50),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(
+                                            text = "Резервная копия доступна",
+                                            fontSize = (fontSize - 1).sp,
+                                            color = Color.Black,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+
                                 Button(
                                     onClick = {
                                         coroutineScope.launch {
@@ -579,31 +516,26 @@ fun SettingsScreen(
 
                                                 if (restoreSuccess) {
                                                     DisneyCacheManager.saveCache(restoredCharacters)
-
                                                     internalStorage.deleteBackup(fileName)
                                                     hasBackup = false
                                                     fileInfo = externalStorage.getFileInfo(fileName)
 
-                                                    successMessage = "Данные восстановлены в файл $fileName.txt!\nВосстановлено ${restoredCharacters.size} персонажей"
-                                                    showSuccessMessage = true
-
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Данные восстановлены в $fileName.txt",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
+                                                    showToast = true
+                                                    toastMessage = "Данные восстановлены"
                                                 } else {
-                                                    successMessage = "Ошибка при восстановлении файла"
-                                                    showSuccessMessage = true
+                                                    showToast = true
+                                                    toastMessage = "Ошибка восстановления"
                                                 }
                                             } else {
-                                                successMessage = "Резервная копия пуста или повреждена"
-                                                showSuccessMessage = true
+                                                showToast = true
+                                                toastMessage = "Резервная копия повреждена"
                                             }
                                             isRestoring = false
                                         }
                                     },
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(40.dp),
                                     enabled = !isLoading && !isDeleting && !isRestoring && !isEditingFileName,
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(0xFF2196F3),
@@ -612,38 +544,23 @@ fun SettingsScreen(
                                 ) {
                                     if (isRestoring) {
                                         CircularProgressIndicator(
-                                            modifier = Modifier.size(20.dp),
+                                            modifier = Modifier.size(16.dp),
                                             color = Color.White,
                                             strokeWidth = 2.dp
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Восстановление...")
+                                        Text("Восстановление...", fontSize = (fontSize - 1).sp)
                                     } else {
                                         Icon(
                                             imageVector = Icons.Default.Restore,
                                             contentDescription = null,
-                                            modifier = Modifier.size(18.dp)
+                                            modifier = Modifier.size(16.dp)
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Восстановить в $fileName.txt")
+                                        Text("Восстановить файл", fontSize = (fontSize - 1).sp)
                                     }
                                 }
                             }
-                        }
-
-                        AnimatedVisibility(
-                            visible = showSuccessMessage,
-                            enter = fadeIn(),
-                            exit = fadeOut()
-                        ) {
-                            Text(
-                                text = successMessage,
-                                fontSize = (fontSize - 2).sp,
-                                color = Color(0xFF4CAF50),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp)
-                            )
                         }
                     }
                 }
@@ -652,7 +569,7 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White.copy(alpha = 0.9f)
+                        containerColor = Color.White.copy(alpha = 0.95f)
                     ),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
@@ -662,144 +579,55 @@ fun SettingsScreen(
                     ) {
                         Text(
                             text = "Смена пароля",
-                            fontSize = (fontSize + 4).sp,
+                            fontSize = (fontSize + 2).sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                            color = Color(0xFFD43D51)
                         )
 
                         if (storedPassword.isNotEmpty()) {
-                            OutlinedTextField(
+                            PasswordField(
                                 value = currentPassword,
                                 onValueChange = { currentPassword = it },
-                                label = {
-                                    Text(
-                                        "Текущий пароль",
-                                        fontSize = (fontSize - 2).sp
-                                    )
-                                },
-                                visualTransformation = if (showCurrentPassword) {
-                                    VisualTransformation.None
-                                } else {
-                                    PasswordVisualTransformation()
-                                },
-                                trailingIcon = {
-                                    IconButton(onClick = { showCurrentPassword = !showCurrentPassword }) {
-                                        Icon(
-                                            imageVector = if (showCurrentPassword)
-                                                Icons.Filled.Visibility
-                                            else
-                                                Icons.Filled.VisibilityOff,
-                                            contentDescription = if (showCurrentPassword)
-                                                "Скрыть пароль"
-                                            else
-                                                "Показать пароль",
-                                            tint = Color(0xFFD43D51)
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    focusedLabelColor = Color(0xFFD43D51),
-                                    unfocusedLabelColor = Color.Gray,
-                                    focusedTextColor = Color.Black,
-                                    unfocusedTextColor = Color.Black
-                                )
+                                label = "Текущий пароль",
+                                showPassword = showCurrentPassword,
+                                onToggleVisibility = { showCurrentPassword = !showCurrentPassword },
+                                fontSize = fontSize
                             )
                         }
 
-                        OutlinedTextField(
+                        PasswordField(
                             value = newPassword,
                             onValueChange = { newPassword = it },
-                            label = {
-                                Text("Новый пароль", fontSize = (fontSize - 2).sp)
-                            },
-                            visualTransformation = if (showNewPassword) {
-                                VisualTransformation.None
-                            } else {
-                                PasswordVisualTransformation()
-                            },
-                            trailingIcon = {
-                                IconButton(onClick = { showNewPassword = !showNewPassword }) {
-                                    Icon(
-                                        imageVector = if (showNewPassword)
-                                            Icons.Filled.Visibility
-                                        else
-                                            Icons.Filled.VisibilityOff,
-                                        contentDescription = if (showNewPassword)
-                                            "Скрыть пароль"
-                                        else
-                                            "Показать пароль",
-                                        tint = Color(0xFFD43D51)
-                                    )
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedLabelColor = Color(0xFFD43D51),
-                                unfocusedLabelColor = Color.Gray,
-                                focusedTextColor = Color.Black,
-                                unfocusedTextColor = Color.Black
-                            )
+                            label = "Новый пароль",
+                            showPassword = showNewPassword,
+                            onToggleVisibility = { showNewPassword = !showNewPassword },
+                            fontSize = fontSize
                         )
 
-                        OutlinedTextField(
+                        PasswordField(
                             value = confirmPassword,
                             onValueChange = { confirmPassword = it },
-                            label = {
-                                Text("Подтвердите пароль", fontSize = (fontSize - 2).sp)
-                            },
-                            visualTransformation = if (showConfirmPassword) {
-                                VisualTransformation.None
-                            } else {
-                                PasswordVisualTransformation()
-                            },
-                            trailingIcon = {
-                                IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
-                                    Icon(
-                                        imageVector = if (showConfirmPassword)
-                                            Icons.Filled.Visibility
-                                        else
-                                            Icons.Filled.VisibilityOff,
-                                        contentDescription = if (showConfirmPassword)
-                                            "Скрыть пароль"
-                                        else
-                                            "Показать пароль",
-                                        tint = Color(0xFFD43D51)
-                                    )
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedLabelColor = Color(0xFFD43D51),
-                                unfocusedLabelColor = Color.Gray,
-                                focusedTextColor = Color.Black,
-                                unfocusedTextColor = Color.Black
-                            )
+                            label = "Подтвердите пароль",
+                            showPassword = showConfirmPassword,
+                            onToggleVisibility = { showConfirmPassword = !showConfirmPassword },
+                            fontSize = fontSize
                         )
-
-                        Spacer(modifier = Modifier.height(8.dp))
 
                         Button(
                             onClick = {
                                 if (newPassword.length < 6) {
-                                    Toast.makeText(context, "Пароль должен быть не менее 6 символов", Toast.LENGTH_SHORT).show()
+                                    showToast = true
+                                    toastMessage = "Пароль должен быть не менее 6 символов"
                                     return@Button
                                 }
                                 if (newPassword != confirmPassword) {
-                                    Toast.makeText(context, "Пароли не совпадают", Toast.LENGTH_SHORT).show()
+                                    showToast = true
+                                    toastMessage = "Пароли не совпадают"
                                     return@Button
                                 }
                                 if (storedPassword.isNotEmpty() && currentPassword != storedPassword) {
-                                    Toast.makeText(context, "Неверный текущий пароль", Toast.LENGTH_SHORT).show()
+                                    showToast = true
+                                    toastMessage = "Неверный текущий пароль"
                                     return@Button
                                 }
 
@@ -810,16 +638,18 @@ fun SettingsScreen(
                                 showCurrentPassword = false
                                 showNewPassword = false
                                 showConfirmPassword = false
-                                Toast.makeText(context, "Пароль успешно изменен", Toast.LENGTH_SHORT).show()
+                                showToast = true
+                                toastMessage = "Пароль успешно изменен"
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             enabled = newPassword.isNotBlank() && confirmPassword.isNotBlank(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.White,
-                                contentColor = Color(0xFFD43D51)
-                            )
+                                contentColor = Color(0xFFD43D51),
+                                disabledContainerColor = Color.Gray.copy(alpha = 0.2f),
+                                disabledContentColor = Color.Gray
+                            ),
+                            border = BorderStroke(1.dp, Color(0xFFD43D51))
                         ) {
                             Text(
                                 "Сменить пароль",
@@ -834,19 +664,19 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White.copy(alpha = 0.9f)
+                        containerColor = Color.White.copy(alpha = 0.95f)
                     ),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
                             text = "Размер шрифта",
-                            fontSize = (fontSize + 4).sp,
+                            fontSize = (fontSize + 2).sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                            color = Color(0xFFD43D51)
                         )
 
                         Row(
@@ -855,79 +685,37 @@ fun SettingsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Текущий размер:",
+                                text = "Текущий:",
                                 fontSize = fontSize.sp,
                                 color = Color.Black
                             )
                             Text(
                                 text = "${fontSize.toInt()}sp",
                                 fontSize = (fontSize + 2).sp,
-                                color = Color.Black,
+                                color = Color(0xFFD43D51),
                                 fontWeight = FontWeight.Bold
                             )
                         }
 
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                FontSizeButton(
-                                    size = 12f,
-                                    currentSize = fontSize,
-                                    label = "Маленький",
-                                    onClick = { fontSize = 12f },
-                                    modifier = Modifier.weight(1f)
-                                )
-                                FontSizeButton(
-                                    size = 14f,
-                                    currentSize = fontSize,
-                                    label = "Средний",
-                                    onClick = { fontSize = 14f },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                FontSizeButton(
-                                    size = 16f,
-                                    currentSize = fontSize,
-                                    label = "Большой",
-                                    onClick = { fontSize = 16f },
-                                    modifier = Modifier.weight(1f)
-                                )
-                                FontSizeButton(
-                                    size = 18f,
-                                    currentSize = fontSize,
-                                    label = "Очень большой",
-                                    onClick = { fontSize = 18f },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                FontSizeButton(
-                                    size = 20f,
-                                    currentSize = fontSize,
-                                    label = "Огромный",
-                                    onClick = { fontSize = 20f },
-                                    modifier = Modifier.weight(1f)
-                                )
-                                FontSizeButton(
-                                    size = 24f,
-                                    currentSize = fontSize,
-                                    label = "Гигантский",
-                                    onClick = { fontSize = 24f },
-                                    modifier = Modifier.weight(1f)
-                                )
+                            listOf(12f, 14f, 16f, 18f, 20f).forEach { size ->
+                                Button(
+                                    onClick = { fontSize = size },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (fontSize == size) Color(0xFFD43D51) else Color.Transparent,
+                                        contentColor = if (fontSize == size) Color.White else Color(0xFFD43D51)
+                                    ),
+                                    border = if (fontSize == size) null else BorderStroke(
+                                        1.dp,
+                                        Color(0xFFD43D51).copy(alpha = 0.5f)
+                                    )
+                                ) {
+                                    Text("${size.toInt()}sp", fontSize = 12.sp)
+                                }
                             }
                         }
 
@@ -935,16 +723,16 @@ fun SettingsScreen(
                             onClick = {
                                 coroutineScope.launch {
                                     dataStore.setFontSize(fontSize)
-                                    Toast.makeText(context, "Размер шрифта сохранен", Toast.LENGTH_SHORT).show()
+                                    showToast = true
+                                    toastMessage = "Размер шрифта сохранен"
                                 }
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.White,
                                 contentColor = Color(0xFFD43D51)
-                            )
+                            ),
+                            border = BorderStroke(1.dp, Color(0xFFD43D51))
                         ) {
                             Text(
                                 "Сохранить размер шрифта",
@@ -956,47 +744,70 @@ fun SettingsScreen(
                 }
             }
         }
+
+        AnimatedVisibility(
+            visible = showToast,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFD43D51).copy(alpha = 0.9f)
+                ),
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                Text(
+                    text = toastMessage,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    fontSize = fontSize.sp,
+                    color = Color.White,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FontSizeButton(
-    size: Float,
-    currentSize: Float,
+fun PasswordField(
+    value: String,
+    onValueChange: (String) -> Unit,
     label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    showPassword: Boolean,
+    onToggleVisibility: () -> Unit,
+    fontSize: Float
 ) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .height(76.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (currentSize == size) Color(0xFFD43D51) else Color.Transparent,
-            contentColor = if (currentSize == size) Color.White else Color(0xFFD43D51)
-        ),
-        border = if (currentSize == size) null else BorderStroke(
-            width = 1.dp,
-            color = Color.Gray
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label, fontSize = (fontSize - 2).sp) },
+        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            IconButton(onClick = onToggleVisibility) {
+                Icon(
+                    imageVector = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                    contentDescription = if (showPassword) "Скрыть пароль" else "Показать пароль",
+                    tint = Color(0xFFD43D51)
+                )
+            }
+        },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            focusedLabelColor = Color(0xFFD43D51),
+            unfocusedLabelColor = Color.Gray,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black
         )
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = "${size.toInt()}sp",
-                fontSize = size.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = label,
-                fontSize = 10.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
+    )
 }

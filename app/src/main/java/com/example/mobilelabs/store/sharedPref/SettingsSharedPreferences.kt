@@ -18,6 +18,5 @@ class SettingsSharedPreferences(private val context: Context) {
 
     companion object {
         private const val PASSWORD_KEY = "user.password"
-        private const val NOTIFICATIONS_KEY = "settings.notifications"
     }
 }

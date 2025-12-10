@@ -37,7 +37,6 @@ class ExternalFileStorage(private val context: Context) {
             file.writeText(jsonContent)
 
             Log.d("ExternalFileStorage", "Файл сохранен в формате JSON: ${file.absolutePath}")
-            Log.d("ExternalFileStorage", "Размер JSON: ${jsonContent.length} символов")
             true
         } catch (e: Exception) {
             Log.e("ExternalFileStorage", "Ошибка сохранения JSON", e)
