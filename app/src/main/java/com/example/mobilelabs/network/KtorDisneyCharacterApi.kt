@@ -60,10 +60,11 @@ object KtorDisneyCharacterApi {
             }
 
             if (characters.isEmpty()) {
-                Log.e(TAG, "Не удалось загрузить ни одного персонажа")
-                Result.failure(Exception("Не удалось загрузить ни одного персонажа"))
+                Log.w(TAG, "Не удалось загрузить ни одного персонажа из диапазона $ids")
+                // Возвращаем успех с пустым списком, чтобы не прерывать процесс загрузки
+                Result.success(emptyList())
             } else {
-                Log.i(TAG, "Загрузка завершена. Всего персонажей: ${characters.size}")
+                Log.i(TAG, "Загрузка завершена. Всего персонажей: ${characters.size} из ${ids.count()} запрошенных")
                 Result.success(characters)
             }
 

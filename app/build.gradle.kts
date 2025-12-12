@@ -7,6 +7,7 @@ plugins {
 
     kotlin("plugin.serialization") version "2.0.21"
     kotlin("plugin.parcelize")
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27"
 
     id("androidx.navigation.safeargs.kotlin")
 }
@@ -79,6 +80,11 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.0")
 
     implementation ("androidx.compose.material:material-icons-extended:1.6.0")
+
+    val room_version = "2.8.4"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

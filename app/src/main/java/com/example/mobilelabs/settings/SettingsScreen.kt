@@ -75,7 +75,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.mobilelabs.Model.Disney.DisneyCharacter
 import com.example.mobilelabs.R
-import com.example.mobilelabs.store.DisneyCacheManager
+import com.example.mobilelabs.repository.DisneyCharacterRepository
 import com.example.mobilelabs.store.datastore.SettingsDataStore
 import com.example.mobilelabs.store.file.ExternalFileStorage
 import com.example.mobilelabs.store.file.FileInfo
@@ -95,6 +95,9 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
     val dataStore = remember { SettingsDataStore(context) }
     val sharedPrefs = remember { SettingsSharedPreferences(context) }
+    
+    // Репозиторий для работы с Room
+    val repository = remember { DisneyCharacterRepository.getInstance(context) }
 
     val externalStorage = remember { ExternalFileStorage(context) }
     val internalStorage = remember { InternalFileStorage(context) }
@@ -125,11 +128,14 @@ fun SettingsScreen(
     var showNewPassword by rememberSaveable { mutableStateOf(false) }
     var showConfirmPassword by rememberSaveable { mutableStateOf(false) }
 
-    val charactersForBackup = remember(disneyCharacters) {
+    // Получаем персонажей из Room для резервного копирования
+    val charactersFromRoom by repository.getAllCharacters().collectAsState(initial = emptyList())
+    
+    val charactersForBackup = remember(disneyCharacters, charactersFromRoom) {
         if (disneyCharacters.isNotEmpty()) {
             disneyCharacters
         } else {
-            DisneyCacheManager.getCharacters()
+            charactersFromRoom
         }
     }
 
@@ -515,7 +521,8 @@ fun SettingsScreen(
                                                 val restoreSuccess = externalStorage.saveDisneyCharacters(restoredCharacters, fileName)
 
                                                 if (restoreSuccess) {
-                                                    DisneyCacheManager.saveCache(restoredCharacters)
+                                                    // Сохраняем восстановленные персонажи в Room
+                                                    repository.insertCharacters(restoredCharacters)
                                                     internalStorage.deleteBackup(fileName)
                                                     hasBackup = false
                                                     fileInfo = externalStorage.getFileInfo(fileName)

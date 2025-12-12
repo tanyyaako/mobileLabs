@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,8 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun TopBar(onSettingsClick: () -> Unit,
-           fontSize: Float ) {
+fun TopBar(
+    onSettingsClick: () -> Unit,
+    onRefreshClick: () -> Unit,
+    fontSize: Float
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -36,6 +40,20 @@ fun TopBar(onSettingsClick: () -> Unit,
             Icon(
                 imageVector = Icons.Default.Settings,
                 contentDescription = "Настройки",
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+
+        IconButton(
+            onClick = onRefreshClick,
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "Обновить",
                 tint = Color.White,
                 modifier = Modifier.size(28.dp)
             )
